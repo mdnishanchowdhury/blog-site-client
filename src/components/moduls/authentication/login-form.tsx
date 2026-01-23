@@ -32,6 +32,8 @@ export function LoginForm({
     console.log("data", data)
   };
 
+  const session = authClient.getSession();
+  console.log("session", session);
 
 
   return (

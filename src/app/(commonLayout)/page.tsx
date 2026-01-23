@@ -1,11 +1,11 @@
-import { Button } from "@/components/ui/button"
-import { authClient } from "@/lib/auth-client"
+import { Button } from "@/components/ui/button";
+import { userService } from "@/services/user.service";
 
 export default async function Home() {
 
-  const session = await authClient.getSession();
+  const { data } = await userService.getSession();
 
-  // console.log(session);
+  console.log("user", data);
 
   return (
     <div>
