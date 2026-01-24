@@ -1,9 +1,22 @@
-import { resolve } from 'path'
-import React from 'react'
+"use client";
 
-export default async function ABoutPage() {
+import { getBlogs } from '@/actions/blog.action';
+import React, { useEffect, useState } from 'react'
 
-    await new Promise((resolve) => setTimeout(resolve, 4000));
+export default function AboutPage() {
+
+    const [data, setData] = useState(null);
+    const [error, setError] = useState<{ message: string | null } | null>(null);
+
+    useEffect(() => {
+        (async () => {
+            const { data, error } = await getBlogs();
+            setData(data);
+            setError(error);
+        })();
+    }, []);
+
+    console.log(error);
 
     return (
         <div>
@@ -11,3 +24,5 @@ export default async function ABoutPage() {
         </div>
     )
 }
+
+// await new Promise((resolve) => setTimeout(resolve, 4000));

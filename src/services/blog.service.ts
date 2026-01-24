@@ -1,3 +1,4 @@
+import { config } from "@/proxy";
 
 const API_URL = process.env.API_URL;
 
@@ -11,7 +12,7 @@ interface GetBlogsParams {
     search?: string;
 }
 
-export const blogSerice = {
+export const blogService = {
     getBlogPosts: async function (params?: GetBlogsParams, options?: ServiceOptions) {
         try {
 
@@ -46,5 +47,18 @@ export const blogSerice = {
         } catch (error) {
             return { data: null, error: { message: 'Something went wrong' } };
         }
+    },
+
+    getBlogById: async function (id: string) {
+        try {
+            const res = await fetch(`${API_URL}/posts/${id}`);
+
+            const data = await res.json();
+
+            return { data, error: null };
+        } catch (error) {
+            return { data: null, error: { message: 'Something went wrong' } };
+        }
     }
-}
+
+};  

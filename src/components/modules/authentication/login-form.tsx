@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -8,21 +7,21 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { authClient } from "@/lib/auth-client"
+} from "@/components/ui/card";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
+import { useForm } from "@tanstack/react-form";
+import { toast } from "sonner";
+import * as z from "zod";
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+const formSchema = z.object({
+  email: z.email(),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+});
 
+
+export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
 
   const handleGoogleLogin = async () => {
     const data = await authClient.signIn.social({
@@ -32,58 +31,119 @@ export function LoginForm({
     console.log("data", data)
   };
 
-  const session = authClient.getSession();
-  console.log("session", session);
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: ""
+    },
+    validators: {
+      onSubmit: formSchema,
+    },
+    onSubmit: async ({ value }) => {
+
+      const toastId = toast.loading("Loging your account...");
+
+      try {
+        const { data, error } = await authClient.signIn.email(value);
+
+        if (error) {
+          toast.error(error.message, { id: toastId });
+          return;
+        }
+
+        toast.success("Account Login successfully.", { id: toastId });
+
+      } catch (error) {
+        toast.error("An unexpected error occurred. Please try again later.", { id: toastId });
+      }
+    }
+  });
+
 
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </Field>
-              <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
-                <Input id="password" type="password" required />
-              </Field>
-              <Field>
-                <Button type="submit">Login</Button>
+    <Card {...props}>
+      <CardHeader>
+        <CardTitle>Create an account</CardTitle>
+        <CardDescription>
+          Enter your information below to create your account
+        </CardDescription>
+      </CardHeader>
 
-                <Button onClick={() => handleGoogleLogin()} variant="outline" type="button">
-                  Login with Google
-                </Button>
+      <form
+        className="px-5"
+        id="login-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
+      >
+        <FieldGroup>
+          <form.Field
+            name="email"
+            children={(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field>
+                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                  <Input
+                    type="email"
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </Field>
+              );
+            }}
+          />
+          <form.Field
+            name="password"
+            children={(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field>
+                  <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                  <Input
+                    type="password"
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </Field>
+              );
+            }}
+          />
+        </FieldGroup>
+      </form>
 
-                <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+      <CardContent>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+          className="space-y-3"
+        >
+          <Button type="submit" className="w-full">
+            Sign In
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleGoogleLogin}
+          >
+            Continue with Google
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   )
 }

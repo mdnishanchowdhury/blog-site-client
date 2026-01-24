@@ -1,5 +1,5 @@
 import BlogCard from "@/components/modules/homePage/BlogCard";
-import { blogSerice } from "@/services/blog.service";
+import { blogService } from "@/services/blog.service";
 import type { Blog } from "@/types/blog.type";
 
 
@@ -9,7 +9,7 @@ export default async function Home() {
   let posts: Blog[] = [];
 
   try {
-    const res = await blogSerice.getBlogPosts(
+    const res = await blogService.getBlogPosts(
       { isFeatured: false },
       { cache: "no-store" }
     );
