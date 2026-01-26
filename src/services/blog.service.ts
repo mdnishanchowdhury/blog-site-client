@@ -37,8 +37,17 @@ export const blogService = {
                 config.next = { revalidate: options.revalidate };
             }
 
+            config.next = { ...config.next, tags: ['blogPosts'] };
+
             // const res = await fetch(`${API_URL}/posts`,{cache:'no-store'});
             // const res = await fetch(`${API_URL}/posts`, { next: { revalidate: 10 } });
+
+            //   const res = await fetch(url.toString(), {
+            //     next: {
+            //         tags: ['blogPosts']
+            //     }
+            // });
+
             const res = await fetch(url.toString(), config);
 
             const data = await res.json();
